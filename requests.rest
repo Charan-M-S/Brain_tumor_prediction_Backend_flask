@@ -1,0 +1,116 @@
+### Auth
+POST http://127.0.0.1:5000/auth/register
+Content-Type: application/json
+
+{
+  "name": "sanjay",
+  "email": "sanjay@gmail.com",
+  "password": "sanjay",
+  "role": "patient"
+}
+### Doctor
+###
+
+POST http://127.0.0.1:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "charan@gmail.com",
+  "password": "charan"
+}
+### patient
+###
+POST http://127.0.0.1:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "sanjay@gmail.com",
+  "password": "sanjay"
+}
+###
+### Admin
+POST http://127.0.0.1:5000/admin/create_user
+Authorization: Bearer 
+Content-Type: application/json
+
+{
+  "name": "Patient A",
+  "email": "patienta@example.com",
+  "password": "pass123",
+  "role": "patient",
+  "assigned_doctor_id": "{{DOCTOR_ID}}"
+}
+
+###
+
+GET http://127.0.0.1:5000/admin/list_users
+Authorization: Bearer {{ADMIN_TOKEN}}
+
+###
+
+POST http://127.0.0.1:5000/admin/reset_password
+Authorization: Bearer {{ADMIN_TOKEN}}
+Content-Type: application/json
+
+{
+  "user_id": "{{USER_ID}}",
+  "new_password": "newpass123"
+}
+
+###
+
+### Doctor
+POST http://127.0.0.1:5000/doctor/predict
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyODEyOCwianRpIjoiMDAwYWI2MmYtNmY0OS00ZGZlLTkyYWMtYjU0MmRlODJjZThjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyODEyOCwiZXhwIjoxNzU4ODU2OTI4LCJyb2xlIjoiZG9jdG9yIn0._l7JBzaITfxOHMcpxfVeo6eMHgEfkYe5R7VoM1GMPNU
+Content-Type: multipart/form-data
+
+patient_id=68d5776f6230822a706efba4
+mri_image=@D:\Brain_Tumor_detection_and_Segmentation\Brain_Tumor_Backend\predict.jpeg
+
+###
+POST http://127.0.0.1:5000/doctor/predict
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyOTU5OCwianRpIjoiMWI4OGY2MDktMTNkZS00YmEzLTkzNmItZDIyNWYzMjIyOWExIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyOTU5OCwiZXhwIjoxNzU4ODU4Mzk4LCJyb2xlIjoiZG9jdG9yIn0.KEE-V8JkhoVkdKB1RG3-8NBYINCyHQ-3_gWSyr2HA1A
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="patient_id"
+
+68d5776f6230822a706efba4
+------WebKitFormBoundary
+Content-Disposition: form-data; name="mri_image"; filename="predict.jpeg"
+Content-Type: image/jpeg
+
+< ./predict.jpeg
+------WebKitFormBoundary--
+###
+
+
+POST http://127.0.0.1:5000/doctor/validate/68d59cd4ff04534858199231
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyOTU5OCwianRpIjoiMWI4OGY2MDktMTNkZS00YmEzLTkzNmItZDIyNWYzMjIyOWExIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyOTU5OCwiZXhwIjoxNzU4ODU4Mzk4LCJyb2xlIjoiZG9jdG9yIn0.KEE-V8JkhoVkdKB1RG3-8NBYINCyHQ-3_gWSyr2HA1A
+Content-Type: application/json
+
+{
+  "validated": true,
+  "notes": "Looks good"
+}
+
+###
+
+GET http://127.0.0.1:5000/doctor/predictions
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyOTU5OCwianRpIjoiMWI4OGY2MDktMTNkZS00YmEzLTkzNmItZDIyNWYzMjIyOWExIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyOTU5OCwiZXhwIjoxNzU4ODU4Mzk4LCJyb2xlIjoiZG9jdG9yIn0.KEE-V8JkhoVkdKB1RG3-8NBYINCyHQ-3_gWSyr2HA1A
+
+###
+
+GET http://127.0.0.1:5000/doctor/report/68d59cd4ff04534858199231
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyOTU5OCwianRpIjoiMWI4OGY2MDktMTNkZS00YmEzLTkzNmItZDIyNWYzMjIyOWExIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyOTU5OCwiZXhwIjoxNzU4ODU4Mzk4LCJyb2xlIjoiZG9jdG9yIn0.KEE-V8JkhoVkdKB1RG3-8NBYINCyHQ-3_gWSyr2HA1A
+
+###
+
+### Patient
+GET http://127.0.0.1:5000/patient/predictions
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgzMDA4MCwianRpIjoiNWUyNTRjZGUtMTllMy00MDczLWI4OTQtZjgxZDMwZjEyN2Q1IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU3NzZmNjIzMDgyMmE3MDZlZmJhNCIsIm5iZiI6MTc1ODgzMDA4MCwiZXhwIjoxNzU4ODU4ODgwLCJyb2xlIjoicGF0aWVudCJ9.WtsL5nAsV1oDllh-bcEu6iDmQpI0g8t2YohHNgfntow
+
+###
+
+GET http://127.0.0.1:5000/patient/report/{{PREDICTION_ID}}
+Authorization: Bearer {{PATIENT_TOKEN}}

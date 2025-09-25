@@ -1,0 +1,30 @@
+# Virtual environments
+venv/
+env/
+.venv
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Instance folder
+instance/
+
+# Flask-specific
+.flaskenv
+
+# Database files
+*.sqlite3
+*.db
+
+# Distribution and packaging
+dist/
+build/
+*.egg-info/
+
+# IDE/Editor files
+.idea/
+.vscode/
+
+# Operating system files
+.DS_Store

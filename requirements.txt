@@ -1,0 +1,10 @@
+Flask==2.3.3
+flask-pymongo==2.3.0
+flask-jwt-extended==4.5.1
+Werkzeug==2.3.7
+tensorflow==2.19.0
+keras==3.10.0
+Pillow==10.1.0
+fpdf==1.7.2
+python-dotenv==1.0.0
+numpy==1.25.2
