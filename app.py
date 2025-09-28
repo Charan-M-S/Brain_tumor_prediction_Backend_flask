@@ -1,6 +1,6 @@
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_pymongo import PyMongo
 from flask_jwt_extended import JWTManager
 from config import MONGO_URI, SECRET_KEY
@@ -44,7 +44,7 @@ inject_models()
 
 # Initialize JWT
 jwt = JWTManager(app)
-
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads/reports")
 # Register Blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(admin_bp, url_prefix="/admin")
@@ -54,6 +54,12 @@ app.register_blueprint(patient_bp, url_prefix="/patient")
 @app.route("/")
 def home():
     return jsonify({"message": "Brain Tumor MVP Backend Running"})
+
+
+@app.route("/uploads/reports/<path:filename>")
+def download_report(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename, as_attachment=True)
+
 
 if __name__ == "__main__":
     try:

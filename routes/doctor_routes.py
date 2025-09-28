@@ -95,10 +95,20 @@ def my_predictions():
     preds = doctor_bp.prediction_model.get_predictions_by_doctor(doctor_id)
     result = []
     for p in preds:
-        p["_id"] = str(p["_id"])
-        p["patient_id"] = str(p["patient_id"])
-        p["doctor_id"] = str(p["doctor_id"])
-        result.append(p)
+        result.append({
+            "_id": str(p["_id"]),
+            "patient_id": str(p["patient_id"]),
+            "doctor_id": str(p["doctor_id"]),
+            "mri_image_path": p.get("mri_image_path", ""),
+            "predicted_class": p.get("predicted_class", ""),
+            "confidence": p.get("confidence", 0.0),
+            "validated": p.get("validated", False),
+            "notes": p.get("notes", ""),
+            "report_pdf_path": p.get("report_pdf_path", ""),
+            "status": p.get("status", "pending"),
+            "created_at": p.get("created_at").isoformat() if p.get("created_at") else None
+        })
+    print(jsonify(result))
     return jsonify(result)
 
 
