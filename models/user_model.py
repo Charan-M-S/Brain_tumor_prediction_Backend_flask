@@ -21,7 +21,10 @@ class User:
             user["assigned_doctor_id"] = ObjectId(assigned_doctor_id)
         inserted = self.collection.insert_one(user)
         return str(inserted.inserted_id)
-
+    def get_name_by_id(self, user_id):
+        user = self.collection.find_one({"_id": ObjectId(user_id)}, {"name": 1})
+        return user["name"] if user else "Unknown"
+    
     def verify_password(self, email, password):
         user = self.collection.find_one({"email": email})
         if not user:
