@@ -4,7 +4,7 @@ from flask import Flask, jsonify, send_from_directory
 from flask_pymongo import PyMongo
 from flask_jwt_extended import JWTManager
 from config import MONGO_URI, SECRET_KEY
-from utils.model_inference import load_brain_model
+from utils.model_inference import load_models
 from flask_cors import CORS
 
 
@@ -55,6 +55,10 @@ app.register_blueprint(patient_bp, url_prefix="/patient")
 def home():
     return jsonify({"message": "Brain Tumor MVP Backend Running"})
 
+@app.route('/uploads/segmented/<filename>')
+def serve_segmented_image(filename):
+    return send_from_directory('uploads/segmented', filename)
+
 
 @app.route("/uploads/reports/<path:filename>")
 def download_report(filename):
@@ -63,7 +67,7 @@ def download_report(filename):
 
 if __name__ == "__main__":
     try:
-        load_brain_model()
+        load_models()
     except Exception as e:
         print(f"⚠️ Model failed to load: {e}")
     os.makedirs("uploads/mri_images", exist_ok=True)

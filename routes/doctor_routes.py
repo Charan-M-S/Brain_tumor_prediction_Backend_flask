@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 import os, uuid
-from utils.model_inference import predict_mri, generate_pdf_report
+from utils.model_inference import predict_mri, generate_pdf_report,predict_and_segment
 
 doctor_bp = Blueprint("doctor", __name__)
 doctor_bp.prediction_model = None  # injected from app.py
@@ -27,15 +27,14 @@ def predict_route():
         if not allowed_file(file.filename):
             return jsonify({"error": "Invalid file type"}), 400
 
+        # Save uploaded file
         filename = secure_filename(file.filename)
         file_path = os.path.join("uploads/mri_images", f"{uuid.uuid4().hex}_{filename}")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         file.save(file_path)
 
-        # Predict
-        predicted_class, confidence = predict_mri(file_path)
-
-        # ✅ NO PDF generation here anymore
+        # --- Run prediction + segmentation if needed --- #
+        predicted_class, confidence, segmentation_path = predict_and_segment(file_path)
 
         # Store prediction in DB
         pred_id = doctor_bp.prediction_model.create_prediction(
@@ -46,19 +45,26 @@ def predict_route():
             confidence=confidence,
             validated=False,
             notes="",
-            report_pdf_path=None  # initially no report
+            report_pdf_path=None,  # No PDF for now
+            segmentation_path=segmentation_path  # optional: add column in DB
         )
 
-        return jsonify({
+        response = {
             "message": "Prediction created",
             "prediction_id": pred_id,
             "class": predicted_class,
             "confidence": confidence
-        }), 201
+        }
+
+        if segmentation_path:
+            segmentation_web_path = segmentation_path.replace("\\", "/")
+            response["segmentation_path"] = segmentation_web_path
+
+        return jsonify(response), 201
 
     except Exception as e:
         return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
-    
+
 
 @doctor_bp.route("/validate/<prediction_id>", methods=["POST"])
 @jwt_required()
@@ -87,7 +93,8 @@ def validate_prediction(prediction_id):
                 doctor_name=doctor.get("name", "Unknown"),
                 predicted_class=prediction["predicted_class"],
                 confidence=prediction["confidence"],
-                
+                mri_image_path = prediction["mri_image_path"],
+                segment_image_path = prediction["segmentation_path"],
                 notes=notes,
                 save_path=report_path
             )

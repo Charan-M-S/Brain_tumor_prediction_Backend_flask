@@ -7,7 +7,7 @@ class Prediction:
         self.collection = mongo.db.predictions
         self.user_model = User(mongo)
 
-    def create_prediction(self, patient_id, doctor_id, image_path, predicted_class, confidence, validated=False, notes="", report_pdf_path=None):
+    def create_prediction(self, patient_id, doctor_id, image_path, predicted_class, confidence, validated=False, notes="", report_pdf_path=None,segmentation_path=None):
         prediction_data = {
             "patient_id": ObjectId(patient_id),
             "doctor_id": ObjectId(doctor_id),
@@ -18,7 +18,8 @@ class Prediction:
             "notes": notes,
             "report_pdf_path": report_pdf_path,
             "status": "pending",
-            "created_at": datetime.utcnow()
+            "created_at": datetime.utcnow(),
+            "segmentation_path":segmentation_path
         }
         inserted = self.collection.insert_one(prediction_data)
         return str(inserted.inserted_id)
@@ -52,7 +53,8 @@ class Prediction:
                 "notes": pred.get("notes", ""),
                 "report_pdf_path": pred.get("report_pdf_path"),
                 "status": pred.get("status"),
-                "created_at": pred.get("created_at")
+                "created_at": pred.get("created_at"),
+                "segmentation_path":pred.get("segmentation_path")
             })
         return enriched
     
