@@ -23,10 +23,10 @@ class Prediction:
         inserted = self.collection.insert_one(prediction_data)
         return str(inserted.inserted_id)
 
-    def update_prediction(self, prediction_id, validated=True, notes=""):
+    def update_prediction(self, prediction_id, validated=True, notes="",report_pdf_path=None):
         result = self.collection.update_one(
             {"_id": ObjectId(prediction_id)},
-            {"$set": {"validated": validated, "notes": notes, "status": "completed"}}
+            {"$set": {"validated": validated, "notes": notes, "status": "completed","report_pdf_path":report_pdf_path}}
         )
         return result.modified_count > 0
 

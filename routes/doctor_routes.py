@@ -21,14 +21,12 @@ def predict_route():
         if not patient_id:
             return jsonify({"error": "patient_id required"}), 400
 
-        # Check file
         file = request.files.get("mri_image")
         if not file or file.filename == "":
             return jsonify({"error": "No file uploaded"}), 400
         if not allowed_file(file.filename):
             return jsonify({"error": "Invalid file type"}), 400
 
-        # Save file
         filename = secure_filename(file.filename)
         file_path = os.path.join("uploads/mri_images", f"{uuid.uuid4().hex}_{filename}")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -37,20 +35,7 @@ def predict_route():
         # Predict
         predicted_class, confidence = predict_mri(file_path)
 
-        # Generate PDF
-        patient = doctor_bp.user_model.find_user_by_id(patient_id)
-        doctor = doctor_bp.user_model.find_user_by_id(doctor_id)
-        report_path = os.path.join("uploads/reports", f"{uuid.uuid4().hex}_report.pdf")
-        os.makedirs(os.path.dirname(report_path), exist_ok=True)
-        generate_pdf_report(
-            patient_name=patient.get("name", "Unknown"),
-            patient_id=patient_id,
-            doctor_name=doctor.get("name", "Unknown"),
-            predicted_class=predicted_class,
-            confidence=confidence,
-            notes="",
-            save_path=report_path
-        )
+        # ✅ NO PDF generation here anymore
 
         # Store prediction in DB
         pred_id = doctor_bp.prediction_model.create_prediction(
@@ -61,7 +46,7 @@ def predict_route():
             confidence=confidence,
             validated=False,
             notes="",
-            report_pdf_path=report_path
+            report_pdf_path=None  # initially no report
         )
 
         return jsonify({
@@ -73,19 +58,62 @@ def predict_route():
 
     except Exception as e:
         return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
-
+    
 
 @doctor_bp.route("/validate/<prediction_id>", methods=["POST"])
 @jwt_required()
 def validate_prediction(prediction_id):
-    data = request.json
-    validated = data.get("validated", True)
-    notes = data.get("notes", "")
-    success = doctor_bp.prediction_model.update_prediction(prediction_id, validated, notes)
-    if success:
-        return jsonify({"message": "Prediction updated successfully"})
-    else:
-        return jsonify({"error": "Prediction not found"}), 404
+    try:
+        doctor_id = get_jwt_identity()
+        data = request.json or {}
+        validated = data.get("validated", True)
+        notes = data.get("notes", "")
+
+        # Fetch prediction from DB
+        prediction = doctor_bp.prediction_model.get_prediction_by_id(prediction_id)
+        if not prediction:
+            return jsonify({"error": "Prediction not found"}), 404
+
+        if validated:
+            # Only generate report if doctor validates
+            patient = doctor_bp.user_model.find_user_by_id(prediction["patient_id"])
+            doctor = doctor_bp.user_model.find_user_by_id(doctor_id)
+            report_path = os.path.join("uploads/reports", f"{uuid.uuid4().hex}_report.pdf")
+            os.makedirs(os.path.dirname(report_path), exist_ok=True)
+
+            generate_pdf_report(
+                patient_name=patient.get("name", "Unknown"),
+                patient_id=prediction["patient_id"],
+                doctor_name=doctor.get("name", "Unknown"),
+                predicted_class=prediction["predicted_class"],
+                confidence=prediction["confidence"],
+                
+                notes=notes,
+                save_path=report_path
+            )
+
+            # Update prediction with validated=True and PDF path
+            success = doctor_bp.prediction_model.update_prediction(
+                prediction_id,
+                validated=True,
+                notes=notes,
+                report_pdf_path=report_path
+            )
+        else:
+            # If not validated, just update validated field/notes
+            success = doctor_bp.prediction_model.update_prediction(
+                prediction_id,
+                validated=False,
+                notes=notes
+            )
+
+        if success:
+            return jsonify({"message": "Prediction updated successfully"})
+        else:
+            return jsonify({"error": "Prediction not found"}), 404
+
+    except Exception as e:
+        return jsonify({"error": f"Validation failed: {str(e)}"}), 500
 
 
 @doctor_bp.route("/predictions", methods=["GET"])
