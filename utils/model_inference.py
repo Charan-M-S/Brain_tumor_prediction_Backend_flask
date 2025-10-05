@@ -51,14 +51,16 @@ def load_models():
 
     if unet_model is None:
         print("⏳ Loading U-Net model...")
-        unet_model = load_model(
-            UNET_MODEL_PATH,
-            custom_objects={'dice_loss': dice_loss, 'dice_coef': dice_coef, 'iou_coef': iou_coef}
-        )
+        # unet_model = load_model(
+        #     UNET_MODEL_PATH,
+        #     custom_objects={'dice_loss': dice_loss, 'dice_coef': dice_coef, 'iou_coef': iou_coef}
+        # )
+        # print("✅ U-Net loaded.")
+        unet_model = load_model(UNET_MODEL_PATH,compile=False)
         print("✅ U-Net loaded.")
 
 # --- Predict MRI Class --- #
-def predict_mri(image_path, target_size=(224, 224)):
+def predict_mri(image_path, target_size=(300, 300)):
     if eff_model is None:
         load_models()
 
@@ -74,6 +76,67 @@ def predict_mri(image_path, target_size=(224, 224)):
 
     return predicted_class, confidence
 
+def preprocess_mri(image_path, img_size=128):
+    # Load grayscale MRI
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    # Resize to model input
+    img = cv2.resize(img, (img_size, img_size))
+    # Normalize
+    img = img / 255.0
+    # Expand dims to create shape (128,128,1)
+    img = np.expand_dims(img, axis=-1)
+    # Duplicate channel to match model input (2 channels)
+    img = np.concatenate([img, img], axis=-1)  # shape -> (128,128,2)
+    # Add batch dimension
+    img = np.expand_dims(img, axis=0)  # shape -> (1,128,128,2)
+    return img
+
+def segment_mri1(image_path, save_dir="uploads/segmented"):
+    if unet_model is None:
+        load_models()
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    # -------------------------------
+    # 1. Load and preprocess image
+    # -------------------------------
+    img = cv2.imread(image_path)
+    img_resized = cv2.resize(img, (128, 128))
+    img_gray = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
+    img_norm = img_gray / 255.0
+    img_input = np.expand_dims(img_norm, axis=-1)
+    img_input = np.concatenate([img_input, img_input], axis=-1)  # shape -> (128,128,2)
+    img_input = np.expand_dims(img_input, axis=0)  # Add batch
+
+    # -------------------------------
+    # 2. Predict mask
+    # -------------------------------
+    pred_mask = unet_model.predict(img_input)[0]  # shape -> (128,128,num_classes)
+    mask_class = np.argmax(pred_mask, axis=-1)
+
+    # -------------------------------
+    # 3. Create colored overlay
+    # -------------------------------
+    colors = [
+        [0, 0, 0],       # background
+        [255, 0, 0],     # class 1
+        [0, 255, 0],     # class 2
+        [0, 0, 255],     # class 3
+    ]
+    colored_mask = np.zeros((mask_class.shape[0], mask_class.shape[1], 3), dtype=np.uint8)
+    for i, color in enumerate(colors):
+        colored_mask[mask_class == i] = color
+
+    overlay = cv2.addWeighted(img_resized, 0.7, colored_mask, 0.3, 0)
+
+    # -------------------------------
+    # 4. Save overlay image
+    # -------------------------------
+    filename = f"{uuid.uuid4().hex}_overlay.png"
+    save_path = os.path.join(save_dir, filename)
+    cv2.imwrite(save_path, overlay)
+
+    return save_path
 # --- Run U-Net Segmentation --- #
 def segment_mri(image_path, save_dir="uploads/segmented"):
     if unet_model is None:
@@ -163,6 +226,6 @@ def predict_and_segment(image_path):
     segmentation_path = None
 
     if predicted_class != "no_tumor":
-        segmentation_path = segment_mri(image_path)
+        segmentation_path = segment_mri1(image_path)
 
     return predicted_class, confidence, segmentation_path
