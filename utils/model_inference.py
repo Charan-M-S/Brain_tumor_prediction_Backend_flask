@@ -60,7 +60,7 @@ def load_models():
         print("✅ U-Net loaded.")
 
 # --- Predict MRI Class --- #
-def predict_mri(image_path, target_size=(300, 300)):
+def predict_mri(image_path, target_size=(224, 224)):
     if eff_model is None:
         load_models()
 
