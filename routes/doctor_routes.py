@@ -2,8 +2,8 @@ from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 import os, uuid
-from utils.model_inference import predict_mri, generate_pdf_report,predict_and_segment
-
+from utils.model_inference import generate_pdf_report,predict_and_segment
+from models.user_model import User 
 doctor_bp = Blueprint("doctor", __name__)
 doctor_bp.prediction_model = None  # injected from app.py
 doctor_bp.user_model = None        # injected from app.py
@@ -16,10 +16,10 @@ def allowed_file(filename):
 def predict_route():
     try:
         doctor_id = get_jwt_identity()
-        patient_id = request.form.get("patient_id")
-
+        email = request.form.get("patient_email")
+        patient_id = doctor_bp.user_model.find_patient_id_by_email(email=email)
         if not patient_id:
-            return jsonify({"error": "patient_id required"}), 400
+            return jsonify({"error": "Enter correct patient email"}), 400
 
         file = request.files.get("mri_image")
         if not file or file.filename == "":
@@ -130,9 +130,10 @@ def my_predictions():
     preds = doctor_bp.prediction_model.get_predictions_by_doctor(doctor_id)
     result = []
     for p in preds:
+        patient_name =doctor_bp.user_model.get_name_by_id(p['patient_id'])
         result.append({
             "_id": str(p["_id"]),
-            "patient_id": str(p["patient_id"]),
+            "patient_name": patient_name,
             "doctor_id": str(p["doctor_id"]),
             "mri_image_path": p.get("mri_image_path", ""),
             "predicted_class": p.get("predicted_class", ""),

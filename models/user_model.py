@@ -43,3 +43,9 @@ class User:
     def find_user_by_id(self, user_id):
         return self.collection.find_one({"_id": ObjectId(user_id)})
     
+    def find_patient_id_by_email(self, email):
+        patient = self.collection.find_one({"email": email}, {"_id": 1})
+        if patient:
+            return str(patient["_id"])  # return as string for easier JSON use
+        return None
+    
