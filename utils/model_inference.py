@@ -16,37 +16,17 @@ import cv2
 from config import EFF_MODEL_PATH, UNET_MODEL_PATH
 
 # Class names for EfficientNet
-CLASS_NAMES = ["glioma", "meningioma", "no_tumor", "pituitary"]
-
+CLASS_NAMES = ['glioma_tumor', 'no_tumor', 'meningioma_tumor', 'pituitary_tumor']
 # Global models
 eff_model = None
 unet_model = None
-
-# --- Custom Metrics / Losses --- #
-@register_keras_serializable()
-def dice_coef(y_true, y_pred, smooth=100):
-    y_true_flatten = K.flatten(y_true)
-    y_pred_flatten = K.flatten(y_pred)
-    intersection = K.sum(y_true_flatten * y_pred_flatten)
-    union = K.sum(y_true_flatten) + K.sum(y_pred_flatten)
-    return (2 * intersection + smooth) / (union + smooth)
-
-@register_keras_serializable()
-def dice_loss(y_true, y_pred, smooth=100):
-    return -dice_coef(y_true, y_pred, smooth)
-
-@register_keras_serializable()
-def iou_coef(y_true, y_pred, smooth=100):
-    intersection = K.sum(y_true * y_pred)
-    sum_val = K.sum(y_true + y_pred)
-    return (intersection + smooth) / (sum_val - intersection + smooth)
 
 # --- Load Models --- #
 def load_models():
     global eff_model, unet_model
     if eff_model is None:
         print("⏳ Loading EfficientNet model...")
-        eff_model = load_model(EFF_MODEL_PATH)
+        eff_model = load_model(EFF_MODEL_PATH,compile=False)
         print("✅ EfficientNet loaded.")
 
     if unet_model is None:
@@ -64,10 +44,13 @@ def predict_mri(image_path, target_size=(224, 224)):
     if eff_model is None:
         load_models()
 
-    img = image.load_img(image_path, target_size=target_size)
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
+    # img = image.load_img(image_path, target_size=target_size)
+    # img_array = image.img_to_array(img)
+    # img_array = np.expand_dims(img_array, axis=0)
+    # img_array = preprocess_input(img_array)
+    img = cv2.imread(image_path)
+    img = cv2.resize(img, target_size)
+    img_array = np.expand_dims(img, axis=0)
 
     preds = eff_model.predict(img_array)
     predicted_index = np.argmax(preds, axis=-1)[0]

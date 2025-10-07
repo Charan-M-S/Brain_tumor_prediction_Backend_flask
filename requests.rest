@@ -61,26 +61,16 @@ Content-Type: application/json
 
 ### Doctor
 POST http://127.0.0.1:5000/doctor/predict
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyODEyOCwianRpIjoiMDAwYWI2MmYtNmY0OS00ZGZlLTkyYWMtYjU0MmRlODJjZThjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyODEyOCwiZXhwIjoxNzU4ODU2OTI4LCJyb2xlIjoiZG9jdG9yIn0._l7JBzaITfxOHMcpxfVeo6eMHgEfkYe5R7VoM1GMPNU
-Content-Type: multipart/form-data
-
-patient_id=68d5776f6230822a706efba4
-mri_image=@D:\Brain_Tumor_detection_and_Segmentation\Brain_Tumor_Backend\predict.jpeg
-
-###
-POST http://127.0.0.1:5000/doctor/predict
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1ODgyOTU5OCwianRpIjoiMWI4OGY2MDktMTNkZS00YmEzLTkzNmItZDIyNWYzMjIyOWExIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1ODgyOTU5OCwiZXhwIjoxNzU4ODU4Mzk4LCJyb2xlIjoiZG9jdG9yIn0.KEE-V8JkhoVkdKB1RG3-8NBYINCyHQ-3_gWSyr2HA1A
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc1OTg1NTI1NywianRpIjoiMGE5NGU5NGItY2UzOC00NDQxLTkyZjYtZDIwNjhjYWJmMmJjIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjY4ZDU0NjY2NDI4MjQyN2Y2ZWExMTA5ZSIsIm5iZiI6MTc1OTg1NTI1NywiZXhwIjoxNzU5ODg0MDU3LCJyb2xlIjoiZG9jdG9yIn0.w5XY5NStIXngKUIl1TDYHTxCWWmzMKS3upuqFDacQnY
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="patient_id"
-
 68d5776f6230822a706efba4
 ------WebKitFormBoundary
 Content-Disposition: form-data; name="mri_image"; filename="predict.jpeg"
 Content-Type: image/jpeg
-
-< ./predict.jpeg
+ ./predict.jpeg
 ------WebKitFormBoundary--
 ###
 

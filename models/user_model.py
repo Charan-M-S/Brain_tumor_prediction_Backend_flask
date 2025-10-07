@@ -42,6 +42,4 @@ class User:
 
     def find_user_by_id(self, user_id):
         return self.collection.find_one({"_id": ObjectId(user_id)})
-
-    def get_patients_of_doctor(self, doctor_id):
-        return list(self.collection.find({"role": "patient", "assigned_doctor_id": ObjectId(doctor_id)}, {"password_hash": 0}))
+    

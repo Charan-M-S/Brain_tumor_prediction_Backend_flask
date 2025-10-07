@@ -143,7 +143,6 @@ def my_predictions():
             "status": p.get("status", "pending"),
             "created_at": p.get("created_at").isoformat() if p.get("created_at") else None
         })
-    print(jsonify(result))
     return jsonify(result)
 
 
